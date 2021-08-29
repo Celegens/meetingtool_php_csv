@@ -42,19 +42,19 @@ class MeetingCommand extends Command
         $i = 1;
         while ($currentdate->copy()->addDays($interval)->isBefore($enddate)) {
             //The meeting dates should be on each n-th day, based on the given interval
-            while (true) {
+            $interval_cus = $interval;
+            while ($interval_cus >= 0) {
+                if ($i != 1)
+                    $currentdate->addDay();
                 //A meeting can’t be on the 25/12 or 1/1   || A meeting can’t be in the weekend ||  A meeting can’t be on the 5th of 15th of each month
                 if (in_array($currentdate->toDateString(), $daysToExclude) || $currentdate->isWeekend() ||  $currentdate->day == 5  || $currentdate->day == 15) {
                     //Saturday and Sunday should not be counted as days (all excluded aren't counted as days aswel)
-                    $currentdate = $currentdate->addDay();
                 } else {
-                    break;
+                    $interval_cus -= 1;
                 }
             }
-            $meetings[] =  [$i++,  $currentdate->copy()->toDateString(), $currentdate->englishDayOfWeek]; // 
-            $currentdate = $currentdate->addDays($interval);
+            $meetings[] =  [$i++,  $currentdate->copy()->toDateString(), $currentdate->englishDayOfWeek];
         }
-
         $this->createCsv($meetings);
         $this->info('a csv has been created with all the avaible meeting days.');
     }
@@ -105,7 +105,7 @@ class MeetingCommand extends Command
                 $this->info("Please pass a valid date in te given format dd/mm/yyyy (ex. 20/05/2021)");
             }
         }
-        return Carbon::createFromFormat('d/m/Y', $date);
+        return Carbon::createFromFormat('d/m/Y', $date)->startOfDay();
     }
     /**
      * Gets a valid integer from user input.
@@ -116,8 +116,7 @@ class MeetingCommand extends Command
     {
         $valid_int = false;
         while (!$valid_int) {
-
-            $int = $this->ask('Enter an interval:');
+            $int = $this->ask('Enter an interval of days, (the minimum amount of days between meetings):');
             if (is_numeric($int) &&  ((int)$int) == $int) {
                 $valid_int = true;
             } else {
@@ -152,7 +151,7 @@ class MeetingCommand extends Command
                 $this->info("Please pass a valid date in te given format dd/mm/yyyy (ex. 20/05/2021)");
             }
         }
-        return Carbon::createFromFormat('d/m/Y', $date);
+        return Carbon::createFromFormat('d/m/Y', $date)->startOfDay();
     }
     private function createCsv($meetings)
     {
