@@ -13,7 +13,7 @@ class MeetingCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'meeting'; //or via arguments {startdate} {interval}{enddate}
+    protected $signature = 'meeting'; //or via arguments {startdate}{interval}{enddate} I chose to work with asking input since it's more userfriendly
 
     /**
      * Generate a csv-file with all meeting dates from the start date till the end date.
@@ -41,22 +41,24 @@ class MeetingCommand extends Command
         $currentdate = $startdate;
         $i = 1;
         while ($currentdate->copy()->addDays($interval)->isBefore($enddate)) {
-            //The meeting dates should be on each n-th day, based on the given interval
+            //The meeting dates should be on each n-th day, based on the given interval (the minimum amount of days between meetings)
             $interval_cus = $interval;
             while ($interval_cus >= 0) {
-                if ($i != 1)
+                //To count the startdate as a valid meeting day
+                if ($i != 1) {
                     $currentdate->addDay();
+                }
                 //A meeting can’t be on the 25/12 or 1/1   || A meeting can’t be in the weekend ||  A meeting can’t be on the 5th of 15th of each month
-                if (in_array($currentdate->toDateString(), $daysToExclude) || $currentdate->isWeekend() ||  $currentdate->day == 5  || $currentdate->day == 15) {
+                if (!(in_array($currentdate->toDateString(), $daysToExclude) || $currentdate->isWeekend() ||  $currentdate->day == 5  || $currentdate->day == 15)) {
                     //Saturday and Sunday should not be counted as days (all excluded aren't counted as days aswel)
-                } else {
+                    //Only count a day if it isn't passing the check
                     $interval_cus -= 1;
                 }
             }
             $meetings[] =  [$i++,  $currentdate->copy()->toDateString(), $currentdate->englishDayOfWeek];
         }
         $this->createCsv($meetings);
-        $this->info('a csv has been created with all the avaible meeting days.');
+        $this->info('a csv has been created with all the available meeting days.');
     }
 
 
