@@ -4,7 +4,6 @@ namespace App\Commands;
 
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
-use Illuminate\Console\Scheduling\Schedule;
 use LaravelZero\Framework\Commands\Command;
 
 class MeetingCommand extends Command
@@ -142,7 +141,6 @@ class MeetingCommand extends Command
             try {
                 if (Carbon::createFromFormat('d/m/Y', $date)->format('d/m/Y') === $date) {
                     if (Carbon::createFromFormat('d/m/Y', $date)->isAfter($startdate)) {
-                        $this->info('Enddate is valid');
                         $valid_date = true;
                     } else {
                         $this->info("The enddate needs to be after the startdate(" . $startdate . ")");
